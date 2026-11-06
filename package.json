@@ -1,0 +1,61 @@
+{
+  "name": "dsh-codex-claude-pipeline",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness agent preset: a Codex subagent analyses and decomposes the task, Claude Code subagents execute each work item, and the session only dispatches and reports.",
+  "type": "module",
+  "license": "MIT",
+  "author": "liqi",
+  "homepage": "https://github.com/lidaqi001/dsh-codex-claude-pipeline#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lidaqi001/dsh-codex-claude-pipeline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lidaqi001/dsh-codex-claude-pipeline/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "dsh-bundle",
+    "agent-preset",
+    "codex",
+    "claude-code",
+    "planner",
+    "delegation"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "dsh": ">=0.2.1 <0.3.0-0"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-subagent-claude-code": ">=0.2.1-rc.1 <0.2.2-0 || >=0.2.2-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-subagent-codex": ">=0.2.1-rc.1 <0.2.2-0 || >=0.2.2-rc.1 <0.3.0-0"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "package.json",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "assets/icon-180.png",
+    "README.md",
+    "LICENSE"
+  ],
+  "icon": "./icon.svg",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Codex plans, Claude Code executes">
+  <defs>
+    <linearGradient id="dsh-ccp-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#121E38"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#dsh-ccp-bg)" stroke="#243352" stroke-width="2"/>
+  <g fill="none" stroke="#38BDF8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 20h11M14 28h11M14 36h7"/>
+    <path d="M11 17h3M11 25h3M11 33h3"/>
+  </g>
+  <path d="M27 29h7" fill="none" stroke="#A78BFA" stroke-width="4" stroke-linecap="round"/>
+  <path d="M31 25.5 36.5 29 31 32.5" fill="none" stroke="#A78BFA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="#A78BFA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 20 47 27 40 34"/>
+    <path d="M47 20 54 27 47 34"/>
+  </g>
+  <circle cx="52" cy="47" r="4" fill="#F472B6"/>
+  <path d="M13 47h11" fill="none" stroke="#F472B6" stroke-width="4" stroke-linecap="round"/>
+</svg>

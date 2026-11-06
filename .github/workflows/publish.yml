@@ -1,0 +1,63 @@
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # npm provenance (OIDC)
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Tag pushes always; manual runs only from main (keeps dispatches off arbitrary commits).
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Check tag matches package version
+        if: github.event_name == 'push'
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - name: Is this version already on npm?
+        id: check
+        run: |
+          version=$(node -p "require('./package.json').version")
+          set +e
+          output=$(npm view "dsh-codex-claude-pipeline@${version}" version 2>&1)
+          status=$?
+          set -e
+          if [ $status -eq 0 ]; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::dsh-codex-claude-pipeline@${version} is already published; skipping."
+          elif printf '%s' "$output" | grep -qE 'E404|404 Not Found|is not in this registry'; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::could not determine whether ${version} exists on npm:"
+            printf '%s\n' "$output"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        if: steps.check.outputs.published == 'false'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

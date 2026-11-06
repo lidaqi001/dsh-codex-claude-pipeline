@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Codex 规划 + Claude Code 执行",
+    "description": "先让 Codex 子代理分析任务并拆出工作项，再交给 Claude Code 子代理逐项执行，会话只负责调度、核对与汇报。"
+  }
+}

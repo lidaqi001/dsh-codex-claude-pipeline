@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Codex planning + Claude Code execution",
+    "description": "A Codex subagent analyses and decomposes the task into work items, Claude Code subagents execute them one by one, and the session only dispatches, checks and reports."
+  }
+}
