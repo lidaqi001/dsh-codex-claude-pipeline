@@ -85,10 +85,38 @@ preset 只注册两个委派工具、一个澄清工具、一个进度工具：
 | provider | permissionMode | 为什么 |
 |---|---|---|
 | `codex-planner` | `never` | 规划只需要读文件、检索、看 git 历史。`never` 是无人值守下最保守的档位：不请求审批，沙箱由 Codex 原生配置决定（未改 `~/.codex/config.toml` 的默认配置下实测为只读，工作区内也写不了文件）。persona 另外明确要求 Codex 只读分析、不执行有副作用的命令。 |
-| `claude-code-executor` | `auto` | 执行要真正改文件、跑命令。`auto` 由 Claude Code 原生分类器逐项裁决，不需要人工审批；被拒绝的操作会让执行子代理报告出来，而不是卡住等人。 |
+| `claude-code-executor` | `auto` | 执行要真正改文件、跑命令。`auto` 由 Claude Code 原生分类器逐项裁决，不需要人工审批；被拒绝的操作会让执行子代理报告出来，而不是卡住等人。第三方网关环境下需要 Claude Code ≥ 2.1.318，见下文。 |
 
 两者都是**提示词级约束**：如果你把 Codex 原生 `sandbox_mode` 配成可写、或把 Claude Code 的
 `permissionMode` 改成 `bypassPermissions`，模式本身不会阻止对应代理越界，这是配置责任。
+
+### 关于 `auto` 与第三方网关
+
+`auto` 的分类器有两条路：
+
+- **服务端检查**：不额外发请求，随会话自己的模型请求通过 `safeguards` / `safeguard_results` 字段往返；
+- **Claude Code 自己的分类器请求**：一条独立的模型调用，走 `ANTHROPIC_BASE_URL`，单独计费。
+
+第三方网关/中转（CC Switch、各类 API 代理）通常会丢弃不认识的请求与响应字段，服务端检查就拿不到
+verdict。Claude Code **2.1.318 起**能识别不兼容网关，并自动回退到自己的分类器请求（可能打印一条
+提示），`auto` 正常工作；**更早的版本没有这个回退**，会直接拒绝 Bash/Write，报
+`The server-side auto mode classifier gave no verdict`。
+
+DSH 的 Claude Code 子代理用的是 `@anthropic-ai/claude-agent-sdk` 内置的 CLI。旧版 DSH
+（SDK < 0.3.318 / 内置 CLI < 2.1.318）在 relay 环境下需要先升级，否则执行子代理什么都干不了：
+
+```yaml
+# ~/.dsh/profiles/<profile>/pnpm-workspace.yaml
+# pnpm 11 不再读取 package.json 的 pnpm.overrides，必须写在这里
+overrides:
+  '@anthropic-ai/claude-agent-sdk': 0.3.318
+  # 按平台换成 darwin-x64 / linux-x64 / linux-arm64 / win32-x64 等
+  '@anthropic-ai/claude-agent-sdk-darwin-arm64': 0.3.318
+```
+
+改完在该 profile 目录跑 `pnpm install`，然后重启 DSH 应用。直连官方 Anthropic API 的环境不受影响；
+实在不想升级时，可把执行端改成 `bypassPermissions`（全权限）或 `acceptEdits`（只改文件、不能跑
+命令）绕过分类器。
 
 ## 它怎么接进去
 
@@ -160,6 +188,7 @@ preset 只注册两个委派工具、一个澄清工具、一个进度工具：
 | 有模式，但主代理说没有 `subagent_claude_code` | Claude Code provider 包解析不到或 Host 行未激活 | `list_plugins` 看 `subagent-claude-code-executor` |
 | 规划任务失败，诊断指向 `process` / `initialize` | Codex 未登录、app-server 载荷缺失、平台不支持 | 先在终端跑一次 `codex login status` |
 | 执行任务能读不能写、跑不了命令 | Claude Code `permissionMode` 过于保守 | 保持 `auto`；确实被拒的操作改用 `bypassPermissions`（风险自负） |
+| 执行时报 `The server-side auto mode classifier gave no verdict` | DSH 内置的 Claude Code CLI < 2.1.318，`auto` 的服务端检查被第三方网关丢弃，旧版又没有回退逻辑 | 升级 DSH 的 `@anthropic-ai/claude-agent-sdk` 到 ≥0.3.318（见「关于 `auto` 与第三方网关」）；或暂时改用 `bypassPermissions` / `acceptEdits` |
 | 规划完成后不派执行任务 | 用户只要求分析；或计划被判为不可执行 | 看主代理汇报里的「遗留问题」，必要时让它补派 |
 
 ## 限制与已知问题
@@ -202,6 +231,14 @@ npm pack --dry-run
 ```
 
 ## 变更记录
+
+### 1.0.1
+
+- 文档：新增「关于 `auto` 与第三方网关」——旧版 Claude Code（< 2.1.318）在 relay/中转环境下
+  `auto` 会因拿不到服务端分类器 verdict 而拒绝 Bash/Write；给出升级 DSH 的
+  `@anthropic-ai/claude-agent-sdk`（≥0.3.318）的方法（profile 的 `pnpm-workspace.yaml`
+  overrides），以及 `bypassPermissions` / `acceptEdits` 兜底方案。
+- 文档：「常见故障」补充上述报错的排查条目。无功能变更。
 
 ### 1.0.0
 

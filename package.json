@@ -1,6 +1,6 @@
 {
   "name": "dsh-codex-claude-pipeline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DeepSeek Harness agent preset: a Codex subagent analyses and decomposes the task, Claude Code subagents execute each work item, and the session only dispatches and reports.",
   "type": "module",
   "license": "MIT",
